@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Manifest</title>
+	<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+	<div id="app">
+		<header>
+			<div class="header-left">
+				<div class="wordmark">MANIFEST<span>.</span></div>
+				<nav class="top-nav">
+					<button class="nav-btn active" data-view="po">Purchase Orders</button>
+					<div class="nav-dropdown">
+						<button class="nav-btn dropdown-toggle" data-dropdown="invoices-menu">Invoices &#9662;</button>
+						<div class="dropdown-menu" id="invoices-menu">
+							<button class="dropdown-item" data-view="inprogress">In-Progress Invoices</button>
+							<button class="dropdown-item" data-view="finalized">Finalized Invoices</button>
+						</div>
+					</div>
+					<div class="nav-dropdown">
+						<button class="nav-btn dropdown-toggle" data-dropdown="warehouse-inv-menu">Warehouse Inventory &#9662;</button>
+						<div class="dropdown-menu" id="warehouse-inv-menu">
+							<button class="dropdown-item" data-view="products">Products</button>
+							<button class="dropdown-item" data-view="new-inventory">New Inventory</button>
+						</div>
+					</div>
+				</nav>
+			</div>
+			<div class="subline">Delivery &amp; ASN tracking</div>
+		</header>
+
+		<!-- Purchase Orders -->
+		<div class="full-view" id="po-view">
+			<div class="list-state" id="po-list-state">
+				<div class="pane-heading">
+					<h2>Purchase Orders</h2>
+					<button class="action primary" id="new-order-btn">+ New Order</button>
+				</div>
+				<div class="card-grid" id="po-grid"></div>
+			</div>
+			<div class="detail-state" id="po-detail-state" style="display: none;"></div>
+		</div>
+
+		<!-- In-Progress Invoices -->
+		<div class="full-view" id="inprogress-view" style="display: none;">
+			<div class="list-state" id="inprogress-list-state">
+				<div class="pane-heading"><h2>In-Progress Invoices</h2></div>
+				<div class="card-grid" id="inprogress-grid"></div>
+			</div>
+			<div class="detail-state" id="inprogress-detail-state" style="display: none;"></div>
+		</div>
+
+		<!-- Finalized Invoices -->
+		<div class="full-view" id="finalized-view" style="display: none;">
+			<div class="list-state" id="finalized-list-state">
+				<div class="pane-heading"><h2>Finalized Invoices</h2></div>
+				<div class="card-grid" id="finalized-grid"></div>
+			</div>
+			<div class="detail-state" id="finalized-detail-state" style="display: none;"></div>
+		</div>
+
+		<!-- Products -->
+		<div class="single-pane-view" id="products-view" style="display: none;">
+			<div class="pane-heading">
+				<h2>Products</h2>
+				<div class="pane-heading-right">
+					<input type="text" id="pallet-search" placeholder="Search by pallet ID or product name..." />
+					<button class="action primary" id="new-product-btn">+ New Product</button>
+				</div>
+			</div>
+			<div id="products-summary"></div>
+			<div id="pallet-search-results"></div>
+		</div>
+
+		<!-- New Inventory -->
+		<div class="single-pane-view" id="new-inventory-view" style="display: none;">
+			<div class="pane-heading"><h2>Register a new pallet</h2></div>
+			<form id="pallet-form" class="stacked-form narrow-form">
+				<label>Pallet ID<input type="text" name="palletId" required /></label>
+				<label>Product<select name="productId" id="pallet-form-product" required></select></label>
+				<label>Description<textarea name="description" rows="3" placeholder="Lot number, pack date, condition notes..."></textarea></label>
+				<label>Quantity on pallet<input type="number" name="quantity" min="0" value="0" required /></label>
+				<button class="action primary" type="submit">Add to inventory</button>
+				<div id="pallet-form-msg" class="form-error"></div>
+			</form>
+		</div>
+	</div>
+
+	<div class="modal-overlay" id="order-modal-overlay" style="display: none;">
+		<div class="modal">
+			<h2>New purchase order</h2>
+			<label>Customer name<input type="text" id="order-customer-name" placeholder="Who's this for?" /></label>
+			<div id="order-line-items"></div>
+			<button class="action" type="button" id="add-line-item">+ Add line item</button>
+			<div class="modal-actions">
+				<button class="action" type="button" id="cancel-order">Cancel</button>
+				<button class="action primary" type="button" id="submit-order">Create order</button>
+			</div>
+			<div id="order-error" class="form-error"></div>
+		</div>
+	</div>
+
+	<div class="modal-overlay" id="adjust-modal-overlay" style="display: none;">
+		<div class="modal">
+			<h2>Adjust pallet quantity</h2>
+			<div id="adjust-pallet-label" class="customer-note" style="margin-bottom: 14px;"></div>
+			<label>New quantity<input type="number" id="adjust-quantity" min="0" /></label>
+			<label>Reason<input type="text" id="adjust-reason" placeholder="Physical recount, damage, etc." /></label>
+			<div class="modal-actions">
+				<button class="action" type="button" id="cancel-adjust">Cancel</button>
+				<button class="action primary" type="button" id="submit-adjust">Save adjustment</button>
+			</div>
+			<div id="adjust-error" class="form-error"></div>
+		</div>
+	</div>
+
+	<div class="modal-overlay" id="product-modal-overlay" style="display: none;">
+		<div class="modal">
+			<h2>New product</h2>
+			<label>SKU / Product ID<input type="text" id="product-id-input" /></label>
+			<label>Name<input type="text" id="product-name-input" /></label>
+			<label>Description<textarea id="product-desc-input" rows="3"></textarea></label>
+			<label>Unit<input type="text" id="product-unit-input" value="pallet" /></label>
+			<div class="modal-actions">
+				<button class="action" type="button" id="cancel-product">Cancel</button>
+				<button class="action primary" type="button" id="submit-product">Add product</button>
+			</div>
+			<div id="product-error" class="form-error"></div>
+		</div>
+	</div>
+
+	<div class="modal-overlay" id="ship-modal-overlay" style="display: none;">
+		<div class="modal">
+			<h2>Mark shipped</h2>
+			<label>Carrier <span class="customer-note">(optional)</span><input type="text" id="ship-carrier" placeholder="UPS Ground, XPO Logistics..." /></label>
+			<label>Tracking number <span class="customer-note">(optional)</span><input type="text" id="ship-tracking" /></label>
+			<div class="modal-actions">
+				<button class="action" type="button" id="cancel-ship">Cancel</button>
+				<button class="action primary" type="button" id="submit-ship">Confirm shipment</button>
+			</div>
+		</div>
+	</div>
+
+	<script src="app.js"></script>
+</body>
+</html>
